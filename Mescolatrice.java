@@ -14,7 +14,6 @@ public class Mescolatrice extends Thread {
             System.out.println("Mescolatrice " + id + ": completata preparazione di " + MATTONI_PER_MESCOLATRICE + " mattoni.");
             Logger.scriviLog("Mescolatrice " + id + ": preparazione completata.");
         } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 }
