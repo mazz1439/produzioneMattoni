@@ -1,34 +1,39 @@
+
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Main {
-    private static final int NUMERO_MESCOLATRICI = 8;
-    private static final int MATTONI_PER_CICLO = 1600;
 
-    public static void main(String[] args) throws InterruptedException {
-        System.out.println("Processo di produzione avviato.");
-        Logger.scriviLog("Processo di produzione avviato.");
+    public static final int N_PRODUTTORI_MATTONI = 8;
 
-        // Fase 1: Preparazione della malta
-        Mescolatrice[] mescolatrici = new Mescolatrice[NUMERO_MESCOLATRICI];
-        for (int i = 0; i < NUMERO_MESCOLATRICI; i++) {
-            mescolatrici[i] = new Mescolatrice(i + 1);
-            mescolatrici[i].start();
+    public static void main(String[] args) {
+        ArrayList<Thread> produttoriMattThreadList = new ArrayList<Thread>();
+        ArrayList<ProduttoreMattoni> produttoriMattList = new ArrayList<>();
+        Forno f = new Forno();
+        for (int i = 0; i < N_PRODUTTORI_MATTONI; i++) {
+            ProduttoreMattoni pm = new ProduttoreMattoni(i, f);
+            produttoriMattList.add(pm);
+            Thread pMThread = new Thread(pm);
+            produttoriMattThreadList.add(pMThread);
+            pMThread.start();
         }
-        for (Mescolatrice mescolatrice : mescolatrici) {
-            mescolatrice.join();
-        }
-
-        // Fase 2: Cottura dei mattoni
-        Forno forno = new Forno();
-        int mattoniCotti = 0;
-        while (mattoniCotti < MATTONI_PER_CICLO) {
-            forno.cuociMattoni(Math.min(400, MATTONI_PER_CICLO - mattoniCotti));
-            mattoniCotti += 400;
+        for (Thread pM : produttoriMattThreadList) {
+            try {
+                pM.join();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
-        // Fase 3: Imballaggio
-        Imballatore imballatore = new Imballatore();
-        imballatore.imballaMattoni(MATTONI_PER_CICLO);
+        ArrayList<Mattone> mattoniDaImballareList = new ArrayList<Mattone>();
+        for (ProduttoreMattoni pM : produttoriMattList) {
+            mattoniDaImballareList.addAll(pM.getMattoniList());
+        }
+        Imballatore i = new Imballatore(mattoniDaImballareList);
+        i.imballaMattoni();
 
-        System.out.println("Processo di produzione completato.");
-        Logger.scriviLog("Processo di produzione completato.");
+        System.out.println("Hello World!");
+
     }
 }
